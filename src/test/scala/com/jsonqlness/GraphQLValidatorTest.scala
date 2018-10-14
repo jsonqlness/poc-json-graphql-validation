@@ -39,4 +39,16 @@ class GraphQLValidatorTest extends FlatSpec {
 
     graphQLValidator.apply(character, "Character").failure.exception shouldBe MissingFields(Seq("id", "appearsIn", "isLegacy"))
   }
+
+  it should "pass if all the fields are in JSON object" in {
+    val character =
+      """{
+          |"id": 123,
+          |"name": "Stefan",
+          |"appearsIn": "JEDI",
+          |"isLegacy": true
+          |}""".stripMargin
+
+    graphQLValidator.apply(character, "Character").success.value shouldBe ()
+  }
 }
