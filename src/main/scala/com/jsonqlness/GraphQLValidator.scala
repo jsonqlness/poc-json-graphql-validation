@@ -1,6 +1,6 @@
-package com.thecookiezen
+package com.jsonqlness
 
-import com.thecookiezen.GraphQLValidator.MissingFields
+import com.jsonqlness.GraphQLValidator.MissingFields
 import graphql.schema.idl.{RuntimeWiring, SchemaGenerator, SchemaParser}
 
 import scala.util.Try

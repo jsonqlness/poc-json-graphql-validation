@@ -1,6 +1,6 @@
-package com.thecookiezen
+package com.jsonqlness
 
-import com.thecookiezen.GraphQLValidator.MissingFields
+import com.jsonqlness.GraphQLValidator.MissingFields
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.TryValues._

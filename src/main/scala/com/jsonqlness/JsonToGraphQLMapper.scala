@@ -1,4 +1,4 @@
-package com.thecookiezen
+package com.jsonqlness
 
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.fasterxml.jackson.databind.node._

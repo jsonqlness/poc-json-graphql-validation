@@ -1,4 +1,4 @@
-package com.thecookiezen
+package com.jsonqlness
 
 import graphql.language._
 import org.scalatest.FlatSpec
@@ -6,7 +6,6 @@ import org.scalatest.Matchers._
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 import scala.collection.JavaConverters._
-
 
 class JsonToGraphQLMappingTest extends FlatSpec {
 
