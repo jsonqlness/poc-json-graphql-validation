@@ -1,11 +1,16 @@
 package com.jsonqlness
 
-import com.jsonqlness.GraphQLValidator.MissingFields
+import com.jsonqlness.GraphQLValidator.{MissingFields, MissingValueTypeInSchema}
+import graphql.language.ObjectValue
+import graphql.schema.GraphQLFieldDefinition
 import graphql.schema.idl.{RuntimeWiring, SchemaGenerator, SchemaParser}
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConverters._
 import graphql.schema.GraphQLTypeUtil.isNonNull
+
+import scala.collection.mutable
+import scala.util.control.NonFatal
 
 
 class GraphQLValidator(jsonToGraphQLMapper: JsonToGraphQLMapper, schemaStringify: String) {
@@ -17,17 +22,26 @@ class GraphQLValidator(jsonToGraphQLMapper: JsonToGraphQLMapper, schemaStringify
 
     val objectValue = jsonToGraphQLMapper.map(jsonString)
 
-    val fields = schema
+    getTypeFields(validationType).map(findMissingFields(_, objectValue)) match {
+      case Success(missingFields) => if (missingFields.nonEmpty)
+        throw MissingFields(missingFields.map(_.getName))
+      case Failure(exception) => throw exception
+    }
+  }
+
+  private def findMissingFields(fields: Seq[GraphQLFieldDefinition], value: ObjectValue) = {
+    fields
+      .filter(f => isNonNull(f.getType))
+      .filterNot(q => value.getObjectFields.asScala.exists(p => p.getName == q.getName))
+  }
+
+  private def getTypeFields(validationType: String) = {
+    Try(schema
       .getObjectType(validationType)
       .getFieldDefinitions
-      .asScala
-
-    val missingFields = fields
-      .filter(f => isNonNull(f.getType))
-      .filterNot(q => objectValue.getObjectFields.asScala.exists(p => p.getName == q.getName))
-
-    if (missingFields.nonEmpty)
-      throw MissingFields(missingFields.map(_.getName))
+      .asScala).recover {
+      case NonFatal(_) => throw MissingValueTypeInSchema(validationType, schema.getAllTypesAsList.asScala.map(_.getName))
+    }
   }
 }
 
@@ -35,5 +49,8 @@ object GraphQLValidator {
   sealed trait ValidationError extends IllegalStateException
   case class MissingFields(fields: Seq[String]) extends ValidationError {
     override def toString: String = fields.toString
+  }
+  case class MissingValueTypeInSchema(missingType: String, allSchemaTypes: Seq[String]) extends ValidationError {
+    override def toString: String = s"There is an missing type $missingType in a schema: $allSchemaTypes"
   }
 }
